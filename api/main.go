@@ -1,26 +1,23 @@
 package main
 
 import (
-	"context"
 	"log"
 	"net/http"
-	"os"
-	"os/signal"
-	"pixi/api/config" // Adjusted to match the module name
-	"pixi/api/models" // Import the models package
-	"pixi/api/routes" // Import the routes package where the routes are defined
-	"pixi/api/scheduler"
-	"pixi/api/utils" // Import the utils package where GetEnv is defined
-	"syscall"
 
-	"github.com/gin-contrib/cors" // Correct import for cors
+	"pixi/api/config"
+	"pixi/api/models"
+	"pixi/api/routes"
+	"pixi/api/utils"
+
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
 
-func main() {
-
-	err := godotenv.Load() // This loads the .env file from the current directory
+// Vercel handler that will be invoked
+func handler(w http.ResponseWriter, r *http.Request) {
+	// Load environment variables
+	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
@@ -41,72 +38,44 @@ func main() {
 		&models.Like{},
 		&models.Follow{},
 		&models.Reply{},
-	) // Add any additional models here
+	)
 	if err != nil {
 		log.Fatal("Failed to run AutoMigrate:", err)
 	}
-	log.Println("Database migration completed successfully.")
 
 	// Initialize Gin router
-	r := gin.Default()
+	rGin := gin.Default()
 
-	// Start the scheduler to publish scheduled posts
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	go scheduler.StartScheduler(ctx)
-
-	// apily CORS middleware globally using the gin-contrib/cors package
+	// Set up CORS options
 	corsOptions := cors.New(cors.Config{
-		AllowOrigins:     []string{utils.GetEnv("FRONTEND_URL", "https://er8ooes-anonymous-8081.exp.direct")}, // Allow specific origin
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},                                 // Allow common methods
+		AllowOrigins:     []string{utils.GetEnv("FRONTEND_URL", "https://er8ooes-anonymous-8081.exp.direct")},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		AllowCredentials: true,
 	})
-
-	// apily the CORS middleware
-	r.Use(corsOptions)
+	rGin.Use(corsOptions)
 
 	// Set the db instance in the Gin context
-	r.Use(func(c *gin.Context) {
+	rGin.Use(func(c *gin.Context) {
 		c.Set("db", db)
 		c.Next()
 	})
 
 	// Register routes
-	routes.UserRoutes(r)
-	routes.PostRoutes(r)
-	routes.SavedRoutes(r)
-	routes.CommentRoutes(r)
-	routes.LikeRoutes(r)
-	routes.FollowRoutes(r)
-	routes.ReplyRoutes(r)
+	routes.UserRoutes(rGin)
+	routes.PostRoutes(rGin)
+	routes.SavedRoutes(rGin)
+	routes.CommentRoutes(rGin)
+	routes.LikeRoutes(rGin)
+	routes.FollowRoutes(rGin)
+	routes.ReplyRoutes(rGin)
 
-	// Setup server and graceful shutdown
-	srv := &http.Server{
-		Addr:    ":" + utils.GetEnv("SERVER_PORT", "8080"), // Use utils.GetEnv for server port
-		Handler: r,
-	}
+	// Handle incoming HTTP requests using Gin
+	rGin.ServeHTTP(w, r)
+}
 
-	// Start the server in a goroutine
-	go func() {
-		log.Println("Server running on http://localhost:" + utils.GetEnv("SERVER_PORT", "8080"))
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatal("Server failed to start:", err)
-		}
-	}()
-
-	// Graceful shutdown on SIGINT or SIGTERM
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
-
-	log.Println("Shutting down server...")
-
-	// Wait for server to finish any in-progress requests
-	if err := srv.Shutdown(context.Background()); err != nil {
-		log.Fatal("Server shutdown failed:", err)
-	}
-
-	log.Println("Server stopped")
+// Entry point for Vercel serverless function
+func main() {
+	// Vercel serverless function handler setup
+	http.HandleFunc("/", handler)
 }
