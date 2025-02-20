@@ -2,8 +2,8 @@ package controllers
 
 import (
 	"net/http"
-	"pixi/app/config"
-	"pixi/app/models"
+	"pixi/api/config"
+	"pixi/api/models"
 	"strconv"
 
 	"github.com/gin-gonic/gin"

@@ -1,9 +1,9 @@
 package controllers
 
 import (
-	"pixi/app/config"
-	"pixi/app/models" // Import the models package
-	"pixi/app/utils"
+	"pixi/api/config"
+	"pixi/api/models" // Import the models package
+	"pixi/api/utils"
 
 	"log"
 	"net/http"

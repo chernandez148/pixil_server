@@ -4,7 +4,7 @@ package scheduler
 import (
 	"context"
 	"log"
-	"pixi/app/controllers" // Adjusted to match the module name
+	"pixi/api/controllers" // Adjusted to match the module name
 	"time"
 )
 

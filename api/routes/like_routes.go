@@ -1,8 +1,8 @@
 package routes
 
 import (
-	"pixi/app/controllers"
-	"pixi/app/middleware"
+	"pixi/api/controllers"
+	"pixi/api/middleware"
 
 	"github.com/gin-gonic/gin"
 )
@@ -11,7 +11,7 @@ import (
 func LikeRoutes(router *gin.Engine) {
 	likeGroup := router.Group("/posts/:postID/likes")
 
-	// Apply authentication middleware to all routes in this group
+	// apily authentication middleware to all routes in this group
 	// likeGroup.Use(middleware.AuthRequired())
 
 	// POST route to create a new like on a specific post

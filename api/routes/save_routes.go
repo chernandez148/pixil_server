@@ -1,8 +1,8 @@
 package routes
 
 import (
-	"pixi/app/controllers"
-	"pixi/app/middleware"
+	"pixi/api/controllers"
+	"pixi/api/middleware"
 
 	"github.com/gin-gonic/gin"
 )
