@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"net/http"
-
 	"pixi/api/config"
 	"pixi/api/models"
 	"pixi/api/routes"
@@ -76,6 +75,6 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 // Entry point for Vercel serverless function
 func main() {
-	// Vercel serverless function handler setup
+	// Serve the handler directly, no need for http.HandleFunc in serverless functions
 	http.HandleFunc("/", handler)
 }
