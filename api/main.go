@@ -10,16 +10,11 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 )
 
 // Exported handler function for Vercel
 func Handler(w http.ResponseWriter, r *http.Request) {
 	// Load environment variables
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
 
 	// Connect to the database
 	db, err := config.ConnectDB()
