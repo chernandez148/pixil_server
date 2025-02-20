@@ -13,8 +13,8 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// Vercel handler that will be invoked
-func handler(w http.ResponseWriter, r *http.Request) {
+// Exported handler function for Vercel
+func Handler(w http.ResponseWriter, r *http.Request) {
 	// Load environment variables
 	err := godotenv.Load()
 	if err != nil {
@@ -73,8 +73,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	rGin.ServeHTTP(w, r)
 }
 
-// Entry point for Vercel serverless function
+// Vercel expects an exported function with an HTTP signature
 func main() {
-	// Serve the handler directly, no need for http.HandleFunc in serverless functions
-	http.HandleFunc("/", handler)
+	// Directly handle HTTP requests with the exported function
+	http.HandleFunc("/", Handler)
 }
