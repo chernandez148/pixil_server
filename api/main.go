@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"log"
@@ -74,7 +74,3 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 }
 
 // Vercel expects an exported function with an HTTP signature
-func main() {
-	// Directly handle HTTP requests with the exported function
-	http.HandleFunc("/", Handler)
-}
