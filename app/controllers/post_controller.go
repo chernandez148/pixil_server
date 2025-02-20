@@ -4,8 +4,8 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"pixi/api/config"
-	"pixi/api/models"
+	"pixi/app/config"
+	"pixi/app/models"
 	"strconv"
 	"time"
 

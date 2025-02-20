@@ -3,8 +3,8 @@ package controllers
 import (
 	"net/http"
 	"net/url"
-	"pixi/api/config"
-	"pixi/api/models"
+	"pixi/app/config"
+	"pixi/app/models"
 
 	"github.com/gin-gonic/gin"
 )

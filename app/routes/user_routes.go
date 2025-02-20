@@ -2,7 +2,7 @@
 package routes
 
 import (
-	"pixi/api/controllers"
+	"pixi/app/controllers"
 
 	"github.com/gin-gonic/gin"
 )

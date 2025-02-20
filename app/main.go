@@ -6,11 +6,11 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"pixi/api/config" // Adjusted to match the module name
-	"pixi/api/models" // Import the models package
-	"pixi/api/routes" // Import the routes package where the routes are defined
-	"pixi/api/scheduler"
-	"pixi/api/utils" // Import the utils package where GetEnv is defined
+	"pixi/app/config" // Adjusted to match the module name
+	"pixi/app/models" // Import the models package
+	"pixi/app/routes" // Import the routes package where the routes are defined
+	"pixi/app/scheduler"
+	"pixi/app/utils" // Import the utils package where GetEnv is defined
 	"syscall"
 
 	"github.com/gin-contrib/cors" // Correct import for cors
