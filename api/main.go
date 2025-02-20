@@ -64,7 +64,7 @@ func main() {
 		AllowCredentials: true,
 	})
 
-	// apily the CORS middleware globally
+	// apily the CORS middleware
 	r.Use(corsOptions)
 
 	// Set the db instance in the Gin context
