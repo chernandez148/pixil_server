@@ -14,7 +14,7 @@
   ],
   "crons": [
     {
-      "path": "/api/main.go",
+      "path": "/trigger-scheduler",
       "schedule": "*/1 * * * *"
     }
   ]

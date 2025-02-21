@@ -159,52 +159,25 @@ func PublishScheduledPosts() {
 
 	log.Println("Running PublishScheduledPosts at:", time.Now().UTC())
 
-	// Start a transaction
-	tx := db.Begin()
-	defer func() {
-		if r := recover(); r != nil {
-			tx.Rollback()
-			log.Println("Transaction rolled back due to panic:", r)
-		}
-	}()
-
 	// Fetch all posts where ScheduledAt is less than the current time (in UTC) and status is 'scheduled'
 	var posts []models.Post
-	if err := tx.Where("scheduled_at <= ? AND status = ?", time.Now().UTC(), "scheduled").Find(&posts).Error; err != nil {
+	if err := db.Where("scheduled_at <= ? AND status = ?", time.Now().UTC(), "scheduled").Find(&posts).Error; err != nil {
 		log.Println("Error fetching scheduled posts:", err)
-		tx.Rollback()
 		return
 	}
 
 	log.Println("Number of posts to publish:", len(posts))
 
-	if len(posts) == 0 {
-		log.Println("No posts to publish.")
-		tx.Commit()
-		return
-	}
-
 	// Loop through and publish each scheduled post
 	for _, post := range posts {
 		log.Println("Publishing post (ID:", post.ID, "ScheduledAt:", post.ScheduledAt, ")")
 		post.Status = "published"
-		if err := tx.Save(&post).Error; err != nil {
+		if err := db.Save(&post).Error; err != nil {
 			log.Println("Error publishing post (ID:", post.ID, "):", err)
-			tx.Rollback()
-			return
 		} else {
 			log.Println("Post published successfully (ID:", post.ID, ")")
 		}
 	}
-
-	// Commit the transaction
-	if err := tx.Commit().Error; err != nil {
-		log.Println("Error committing transaction:", err)
-		tx.Rollback()
-		return
-	}
-
-	log.Println("PublishScheduledPosts completed successfully.")
 }
 
 // UpdatePost updates an existing post
