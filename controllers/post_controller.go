@@ -62,6 +62,9 @@ func CreatePost(c *gin.Context) {
 	// Assign the UserID from the context to the new post
 	newPost.UserID = userID.(uint)
 
+	// Assing the Post status as published
+	newPost.Status = "published"
+
 	// Bind the request to the newPost object
 	if err := c.ShouldBindJSON(&newPost); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input", "details": err.Error()})
@@ -114,6 +117,9 @@ func CreateScheduledPost(c *gin.Context) {
 	// Assign the UserID from the context to the new post
 	newPost.UserID = userID.(uint)
 
+	// Assing the Post status as scheduled
+	newPost.Status = "scheduled"
+
 	// Bind the request to the newPost object
 	if err := c.ShouldBindJSON(&newPost); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input", "details": err.Error()})
@@ -134,13 +140,6 @@ func CreateScheduledPost(c *gin.Context) {
 
 	// Convert ScheduledAt to UTC
 	newPost.ScheduledAt = newPost.ScheduledAt.UTC()
-
-	// Set the status to 'scheduled' for future posts
-	if newPost.ScheduledAt.After(time.Now().UTC()) {
-		newPost.Status = "scheduled"
-	} else {
-		newPost.Status = "published"
-	}
 
 	// Save the new scheduled post to the database
 	db := config.GetDB()
