@@ -1,9 +1,10 @@
 package controllers
 
 import (
+	"os"
 	"pixi/api/config"
 	"pixi/api/models" // Import the models package
-	"pixi/api/utils"
+	"strconv"
 
 	"log"
 	"net/http"
@@ -23,6 +24,7 @@ func Login(c *gin.Context) {
 
 	// Bind the incoming JSON request data
 	if err := c.ShouldBindJSON(&loginData); err != nil {
+		log.Printf("Error binding JSON: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
 		return
 	}
@@ -39,7 +41,6 @@ func Login(c *gin.Context) {
 	// Find the user by username and preload their posts without user data in the posts
 	var user models.User
 	if err := db.Preload("Posts", func(db *gorm.DB) *gorm.DB {
-		// This ensures the 'User' inside 'Posts' is not loaded
 		return db.Omit("User")
 	}).Preload("Likes").Preload("Saves").Preload("Posts.Comments").Where("username = ?", loginData.Username).First(&user).Error; err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
@@ -52,14 +53,10 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	// Manually clean up the User field from Posts if it's still present
-	for i := range user.Posts {
-		user.Posts[i].User = nil // Set User to nil to avoid any nested user data
-	}
-
 	// Generate JWT token if credentials are correct
 	token, exp, err := generateJWT(user)
 	if err != nil {
+		log.Printf("Error generating token: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error generating token"})
 		return
 	}
@@ -69,55 +66,74 @@ func Login(c *gin.Context) {
 		"message": "Login successful",
 		"user":    user,
 		"token":   token,
-		"exp":     exp, // Returning the expiration time
+		"exp":     exp,
+	})
+}
+
+// CreateUser creates a new user
+func CreateUser(c *gin.Context) {
+	var newUser models.User
+
+	// Bind the request JSON to the newUser object
+	if err := c.ShouldBindJSON(&newUser); err != nil {
+		log.Printf("Error binding JSON: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+		return
+	}
+
+	// Save the new user to the database
+	db := config.GetDB()
+	if err := newUser.Save(db); err != nil {
+		log.Printf("Error saving user: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error saving user"})
+		return
+	}
+
+	// Generate JWT token for the new user
+	token, exp, err := generateJWT(newUser)
+	if err != nil {
+		log.Printf("Error generating token: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error generating token"})
+		return
+	}
+
+	// Return the generated token and user details
+	c.JSON(http.StatusOK, gin.H{
+		"message": "User created successfully",
+		"user":    newUser,
+		"token":   token,
+		"exp":     exp,
 	})
 }
 
 // generateJWT creates a JWT token for the authenticated user
 func generateJWT(user models.User) (string, int64, error) {
 	// Define JWT claims
+	expirationHours, _ := strconv.Atoi(os.Getenv("JWT_EXPIRATION_HOURS"))
+	if expirationHours == 0 {
+		expirationHours = 72 // Default to 72 hours
+	}
 	claims := jwt.MapClaims{
-		"sub":      user.ID,                               // Subject: User ID
-		"username": user.Username,                         // Username
-		"exp":      time.Now().Add(time.Hour * 72).Unix(), // Expiration time (3 days)
+		"sub":      user.ID,
+		"username": user.Username,
+		"exp":      time.Now().Add(time.Hour * time.Duration(expirationHours)).Unix(),
 	}
 
-	// Define the JWT secret key (using an environment variable for security)
-	secretKey := []byte(utils.GetEnv("JWT_SECRET_KEY", "ksdjfgvaseyr7465794623pvbdlugsfvbf8o7igw4y65tv9p8q264vbe7rw"))
+	// Define the JWT secret key
+	secretKey := []byte(os.Getenv("JWT_SECRET_KEY"))
+	if len(secretKey) == 0 {
+		log.Fatal("JWT_SECRET_KEY environment variable is not set")
+	}
 
-	// Create a new token
+	// Create and sign the token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
-	// Sign the token with the secret key
 	tokenString, err := token.SignedString(secretKey)
 	if err != nil {
-		log.Println("Error signing token:", err)
 		return "", 0, err
 	}
 
 	// Return the token and expiration time
-	expiration := claims["exp"].(int64)
-	return tokenString, expiration, nil
-}
-
-// CreateUser creates a new user
-func CreateUser(c *gin.Context) {
-	var newUser models.User
-	// Bind the request JSON to the newUser object
-	if err := c.ShouldBindJSON(&newUser); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
-		return
-	}
-
-	// Save the new user to the database
-	db := config.GetDB() // Get the database connection
-	if err := newUser.Save(db); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error saving user"})
-		return
-	}
-
-	// Respond with the created user
-	c.JSON(http.StatusOK, gin.H{"message": "User created successfully", "user": newUser})
+	return tokenString, claims["exp"].(int64), nil
 }
 
 // UpdateUser updates an existing user's details
