@@ -15,7 +15,7 @@
   "crons": [
     {
       "path": "/trigger-scheduler",
-      "schedule": "*/1 * * * *"
+      "schedule": "0 0 * * *"
     }
   ]
 }
