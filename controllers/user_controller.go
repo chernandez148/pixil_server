@@ -2,8 +2,8 @@ package controllers
 
 import (
 	"os"
-	"pixi/api/config"
-	"pixi/api/models" // Import the models package
+	"pixi/config"
+	"pixi/models" // Import the models package
 	"strconv"
 
 	"log"

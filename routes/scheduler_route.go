@@ -2,7 +2,7 @@ package routes
 
 import (
 	"net/http"
-	"pixi/api/controllers"
+	"pixi/controllers"
 
 	"github.com/gin-gonic/gin"
 )

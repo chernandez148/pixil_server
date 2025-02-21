@@ -4,8 +4,8 @@ import (
 	"errors"
 	"log"
 	"net/http"
-	"pixi/api/config"
-	"pixi/api/models"
+	"pixi/config"
+	"pixi/models"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
