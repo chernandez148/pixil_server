@@ -1,4 +1,4 @@
-package routes
+package pixil
 
 import (
 	"net/http"
