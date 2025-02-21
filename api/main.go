@@ -1,10 +1,10 @@
-package handler
+package main
 
 import (
 	"net/http"
 )
 
 func main() {
-	http.HandleFunc("/", Handler) // No need to import handler
+	http.HandleFunc("/", Handler)
 	http.ListenAndServe(":8080", nil)
 }
