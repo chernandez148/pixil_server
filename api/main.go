@@ -14,8 +14,6 @@ import (
 
 // Exported handler function for Vercel
 func Handler(w http.ResponseWriter, r *http.Request) {
-	// Load environment variables
-
 	// Connect to the database
 	db, err := config.ConnectDB()
 	if err != nil {
@@ -67,5 +65,3 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	// Handle incoming HTTP requests using Gin
 	rGin.ServeHTTP(w, r)
 }
-
-// Vercel expects an exported function with an HTTP signature
