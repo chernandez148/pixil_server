@@ -4,26 +4,12 @@
     {
       "src": "api/main.go",
       "use": "@vercel/go"
-    },
-    {
-      "src": "api/publish-scheduled-posts.go",
-      "use": "@vercel/go"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
       "dest": "/api/main.go"
-    },
-    {
-      "src": "/api/publish-scheduled-posts",
-      "dest": "/api/publish-scheduled-posts.go"
-    }
-  ],
-  "crons": [
-    {
-      "path": "/api/publish-scheduled-posts",
-      "schedule": "*/1 * * * *"
     }
   ]
 }

@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"pixi/api/config"
+	"pixi/api/controllers"
 	"pixi/api/models"
 	"pixi/api/routes"
 	"pixi/api/utils"
@@ -20,6 +21,12 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		log.Fatal("Failed to connect to the database:", err)
 	}
 	log.Println("Successfully connected to the database.")
+
+	controllers.PublishScheduledPosts()
+
+	// Respond with a success message
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Scheduled posts published"))
 
 	// Perform AutoMigrate for all models
 	err = db.AutoMigrate(
