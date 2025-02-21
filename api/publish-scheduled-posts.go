@@ -6,7 +6,7 @@ import (
 )
 
 func PublishScheduledPostsHandler(w http.ResponseWriter, r *http.Request) {
-	// Call the function to publish scheduled posts
+	// Call the functions to publish scheduled posts
 	controllers.PublishScheduledPosts()
 
 	// Respond with a success message
