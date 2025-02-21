@@ -11,11 +11,5 @@
       "src": "/(.*)",
       "dest": "/api/main.go"
     }
-  ],
-  "crons": [
-    {
-      "path": "/trigger-scheduler",
-      "schedule": "*/1 * * * *"
-    }
   ]
 }
