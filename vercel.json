@@ -11,5 +11,11 @@
       "src": "/(.*)",
       "dest": "/api/main.go"
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/publish-scheduled-posts",
+      "schedule": "*/1 * * * *"
+    }
   ]
 }
