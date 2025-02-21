@@ -14,7 +14,7 @@
   ],
   "crons": [
     {
-      "path": "/api/publish-scheduled-posts",
+      "path": "/api/main.go",
       "schedule": "*/1 * * * *"
     }
   ]
