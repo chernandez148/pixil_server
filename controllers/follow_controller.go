@@ -14,45 +14,78 @@ import (
 
 func GetFollowingsByUserID(c *gin.Context) {
 	db := config.GetDB()
-	var followers []models.Follow
 	userID := c.Param("id") // Get the userID from the URL parameter
 
-	// Query the Follow table and filter by FolloweeID
-	if err := db.Preload("Following").Omit("Follower").Where("follower_id = ?", userID).Find(&followers).Error; err != nil {
+	// Pagination parameters
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))
+	offset := (page - 1) * limit
+
+	// Query to get followings with pagination
+	var followings []struct {
+		FollowingID uint `json:"following_id"`
+	}
+	if err := db.Table("follows").
+		Select("following_id").
+		Where("follower_id = ?", userID).
+		Limit(limit).
+		Offset(offset).
+		Find(&followings).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Follow data not found"})
 		return
 	}
 
-	c.JSON(http.StatusOK, followers)
+	c.JSON(http.StatusOK, gin.H{
+		"data":  followings,
+		"page":  page,
+		"limit": limit,
+	})
 }
 
 func GetFollowersByUserID(c *gin.Context) {
 	db := config.GetDB()
-	var followings []models.Follow
 	userID := c.Param("id")
 
-	if err := db.Preload("Follower").Omit("Following").Where("following_id = ?", userID).Find(&followings).Error; err != nil {
+	// Pagination parameters
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))
+	offset := (page - 1) * limit
+
+	// Query to get followers with pagination
+	var followers []struct {
+		FollowerID uint `json:"follower_id"`
+	}
+	if err := db.Table("follows").
+		Select("follower_id").
+		Where("following_id = ?", userID).
+		Limit(limit).
+		Offset(offset).
+		Find(&followers).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Follow data not found"})
 		return
 	}
 
-	c.JSON(http.StatusOK, followings)
+	c.JSON(http.StatusOK, gin.H{
+		"data":  followers,
+		"page":  page,
+		"limit": limit,
+	})
 }
 
 func CreateAFollow(c *gin.Context) {
 	var newFollow models.Follow
 
-	// Get the logged in user id from the context (the follower)
+	// Get the logged-in user ID from the context (the follower)
 	followerID, exist := c.Get("userID")
 	if !exist {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
 
-	// Assignes the user id from the context as the FollowerID
+	// Assign the user ID from the context as the FollowerID
 	newFollow.FollowerID = followerID.(uint)
 
-	// Binds the request body to newFollow object
+	// Bind the request body to the newFollow object
 	if err := c.ShouldBindJSON(&newFollow); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input", "details": err.Error()})
 		return
@@ -73,14 +106,14 @@ func CreateAFollow(c *gin.Context) {
 	// Get the DB connection
 	db := config.GetDB()
 
-	// Ensure Follower exists (login in user)
+	// Ensure Follower exists (logged-in user)
 	var follower models.User
 	if err := db.First(&follower, newFollow.FollowerID).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Follower not found"})
 		return
 	}
 
-	// Ensure Follower exists (login in user)
+	// Ensure Following exists (user to follow)
 	var following models.User
 	if err := db.First(&following, newFollow.FollowingID).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "User to follow not found"})
@@ -118,8 +151,8 @@ func CreateAFollow(c *gin.Context) {
 	// Respond with the created follower
 	c.JSON(http.StatusCreated, gin.H{
 		"message":  "Follow created successfully",
-		"follower": createdFollow})
-
+		"follower": createdFollow,
+	})
 }
 
 // DeleteFollower handles the deletion of a follower
