@@ -10,7 +10,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func main() {
+// Exported Handler function for Vercel
+func Handler(w http.ResponseWriter, r *http.Request) {
 	// Set Gin to release mode for production
 	gin.SetMode(gin.ReleaseMode)
 
@@ -35,8 +36,6 @@ func main() {
 		log.Fatal("Failed to run AutoMigrate:", err)
 	}
 
-	// Start the server
-	http.HandleFunc("/", handler.Handler(db))
-	log.Println("Server started on :8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	// Initialize the Gin router and handle the request
+	handler.Handler(db)(w, r)
 }
