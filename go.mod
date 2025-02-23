@@ -1,6 +1,6 @@
 module pixi
 
-go 1.21.0
+go 1.20.0
 
 toolchain go1.23.4
 
